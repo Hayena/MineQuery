@@ -7,22 +7,25 @@ class MineQuery(host: String, port: Int = 25565) {
 	val socket = createSocket(port)
 	val address = InetAddress.getByName(host)
 
-	def getStatus: QueryResponse = {
+	def getStatus: Option[QueryResponse] = {
 		val request = new QueryRequest(0, handshake, false)
 		executeRequest(request, false)
 	}
 	
-	def getFullStatus: QueryResponse = {
+	def getFullStatus: Option[QueryResponse] = {
 		val request = new QueryRequest(0, handshake, true)
 		executeRequest(request, true)
 	}
 	
-	private def executeRequest(request: QueryRequest, full: Boolean): QueryResponse = {
-		val input = request.toBytes
-    val result = sendUDP(input)
-    QueryResponse(result, full)
+	private def executeRequest(request: QueryRequest, full: Boolean): Option[QueryResponse] = {
+		try {
+		  val input = request.toBytes
+		  val result = sendUDP(input)
+		  Some(QueryResponse(result, full))
+		} catch {
+			case _: Throwable => None
+		}
 	}
-	
 	
 	private def createSocket(socketPort: Int): DatagramSocket =
 		try {
